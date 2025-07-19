@@ -32,7 +32,7 @@ internal class HtmlTextWriter(
         fun onWriteContentStart()
     }
 
-    private var currentState = STATE_BEGIN_TEXT
+    private var currentState = State.BEGIN_TEXT
     // A negative value indicates new lines should be skipped for the next paragraph
     private var pendingNewLineCount = -1
     private var pendingIndentCount = 0
@@ -45,7 +45,7 @@ internal class HtmlTextWriter(
             }
         }
         pendingIndentCount = indentCount
-        currentState = STATE_BEGIN_TEXT
+        currentState = State.BEGIN_TEXT
     }
 
     /**
@@ -62,14 +62,14 @@ internal class HtmlTextWriter(
         while (true) {
             val contentStartIndex = text.indexOfFirst(index) { !it.isWhitespace() }
             // Add a single space after content if at least one leading whitespace is detected
-            if (state == STATE_CONTENT_IN_PROGRESS && contentStartIndex != index) {
+            if (state == State.CONTENT_IN_PROGRESS && contentStartIndex != index) {
                 contentStart = false
                 callbacks?.onWriteContentStart()
                 output.append(' ')
             }
             if (contentStartIndex == -1) {
                 // No content left, only spaces
-                currentState = STATE_SPACE_IN_PROGRESS
+                currentState = State.SPACE_IN_PROGRESS
                 break
             }
             if (contentStart) {
@@ -82,11 +82,11 @@ internal class HtmlTextWriter(
             if (index == -1) {
                 // No spaces left, write remaining content
                 output.append(text, contentStartIndex, text.length)
-                currentState = STATE_CONTENT_IN_PROGRESS
+                currentState = State.CONTENT_IN_PROGRESS
                 break
             }
             output.append(text, contentStartIndex, index).append(' ')
-            state = STATE_SPACE_IN_PROGRESS
+            state = State.SPACE_IN_PROGRESS
             index++
         }
     }
@@ -97,12 +97,12 @@ internal class HtmlTextWriter(
         writePendingNewLines(0)
         callbacks?.onWriteContentStart()
         output.append(text)
-        currentState = STATE_BEGIN_TEXT
+        currentState = State.BEGIN_TEXT
     }
 
     fun writeLineBreak() {
         writePendingNewLines(1)
-        currentState = STATE_BEGIN_TEXT
+        currentState = State.BEGIN_TEXT
     }
 
     private inline fun CharSequence.indexOfFirst(startIndex: Int, predicate: (Char) -> Boolean): Int {
@@ -135,9 +135,7 @@ internal class HtmlTextWriter(
         }
     }
 
-    companion object {
-        private const val STATE_BEGIN_TEXT = 0              // Don't write the first detected space
-        private const val STATE_SPACE_IN_PROGRESS = 1       // Ignore new spaces
-        private const val STATE_CONTENT_IN_PROGRESS = 2     // Write the first detected space
+    enum class State {
+        BEGIN_TEXT, SPACE_IN_PROGRESS, CONTENT_IN_PROGRESS
     }
 }
