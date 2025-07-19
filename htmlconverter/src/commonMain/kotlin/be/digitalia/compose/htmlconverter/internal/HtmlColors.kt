@@ -318,12 +318,7 @@ private fun getColorByName(colorName: String): Color {
 }
 
 private val Char.hexDigitValue: Int
-    get() = when (this) {
-        in '0'..'9' -> this - '0'
-        in 'a'..'f' -> this - 'a' + 10
-        in 'A'..'F' -> this - 'A' + 10
-        else -> throw IllegalArgumentException("Invalid hex digit")
-    }
+    get() = digitToInt(16)
 
 private fun String.parseHexToInt(): Int {
     val l = length
