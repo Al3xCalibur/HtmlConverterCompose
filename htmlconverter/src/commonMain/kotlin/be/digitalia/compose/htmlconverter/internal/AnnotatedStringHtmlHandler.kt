@@ -76,12 +76,12 @@ internal class AnnotatedStringHtmlHandler(
 
     private fun pushPendingSpanStyles() {
         val size = pendingSpanStyles.size
-        if (size != 0) {
-            for (i in 0..<size) {
-                builder.pushStyle(pendingSpanStyles[i])
-            }
-            pendingSpanStyles.clear()
+        if (size == 0) return
+
+        for (i in 0..<size) {
+            builder.pushStyle(pendingSpanStyles[i])
         }
+        pendingSpanStyles.clear()
     }
 
     private fun getStyleAttribute(attributes: (String) -> String?): String? {
@@ -202,23 +202,21 @@ internal class AnnotatedStringHtmlHandler(
      */
     private fun addPendingParagraph(currentIndex: Int): Boolean {
         // Close current paragraph, if any
-        paragraphStartIndex.let { startIndex ->
-            if (startIndex in 0..<currentIndex) {
-                val indentSize = style.indentUnit * blockIndentLevel
-                builder.addStyle(
-                    style = ParagraphStyle(
-                        textIndent = TextIndent(
-                            firstLine = indentSize,
-                            restLine = indentSize
-                        )
-                    ),
-                    start = startIndex,
-                    end = currentIndex
+        val startIndex = paragraphStartIndex
+        if (startIndex !in 0..<currentIndex) return false
+
+        val indentSize = style.indentUnit * blockIndentLevel
+        builder.addStyle(
+            style = ParagraphStyle(
+                textIndent = TextIndent(
+                    firstLine = indentSize,
+                    restLine = indentSize
                 )
-                return true
-            }
-        }
-        return false
+            ),
+            start = startIndex,
+            end = currentIndex
+        )
+        return true
     }
 
     private fun handleBlockStart(prefixNewLineCount: Int, indent: Boolean) {

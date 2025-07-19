@@ -39,7 +39,7 @@ internal class HtmlTextWriter(
 
     fun markBlockBoundary(newLineCount: Int, indentCount: Int) {
         require(newLineCount > 0) { "newLineCount must be positive" }
-        pendingNewLineCount.let {
+        pendingNewLineCount.also {
             if (it >= 0) {
                 pendingNewLineCount = maxOf(it, newLineCount)
             }
@@ -92,12 +92,12 @@ internal class HtmlTextWriter(
     }
 
     fun writePreformatted(text: String) {
-        if (text.isNotEmpty()) {
-            writePendingNewLines(0)
-            callbacks?.onWriteContentStart()
-            output.append(text)
-            currentState = STATE_BEGIN_TEXT
-        }
+        if (text.isEmpty()) return
+
+        writePendingNewLines(0)
+        callbacks?.onWriteContentStart()
+        output.append(text)
+        currentState = STATE_BEGIN_TEXT
     }
 
     fun writeLineBreak() {
@@ -115,7 +115,7 @@ internal class HtmlTextWriter(
     }
 
     private fun writePendingNewLines(resetNewLineCount: Int) {
-        pendingNewLineCount.let { newLineCount ->
+        pendingNewLineCount.also { newLineCount ->
             if (newLineCount != resetNewLineCount) {
                 pendingNewLineCount = resetNewLineCount
             }
@@ -125,7 +125,7 @@ internal class HtmlTextWriter(
                 }
             }
         }
-        pendingIndentCount.let { indentCount ->
+        pendingIndentCount.also { indentCount ->
             if (indentCount > 0) {
                 repeat(indentCount) {
                     output.append("    ")
